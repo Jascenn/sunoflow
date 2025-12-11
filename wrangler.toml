@@ -1,0 +1,7 @@
+name = "sunoflow"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[build]
+command = "pnpm install && pnpm run pages:build"
