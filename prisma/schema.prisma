@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model Task {
+  id            String   @id @default(cuid())
+  userId        String
+  sunoTaskId    String?  @unique
+  prompt        String
+  tags          String?
+  model         String
+  status        String
+  title         String?
+  audioUrl      String?
+  imageUrl      String?
+  duration      Float?
+  parentAudioId String?
+  isFavorite    Boolean  @default(false)
+  progress      String?  // 进度信息,如 "50%" 或 "生成中..."
+  failReason    String?  // 失败原因
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  User          User     @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  type        String
+  description String?
+  referenceId String?
+  createdAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Upload {
+  id        String   @id @default(cuid())
+  userId    String
+  fileName  String
+  fileSize  Int
+  remoteId  String
+  status    String
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id                    String        @id @default(cuid())
+  clerkId               String        @unique
+  email                 String        @unique
+  name                  String?
+  avatarUrl             String?
+  membershipTier        String        @default("FREE") // FREE, PRO
+  membershipExpiresAt   DateTime?
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  Task                  Task[]
+  Transaction           Transaction[]
+  Upload                Upload[]
+  Wallet                Wallet?
+  Subscription          Subscription?
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0)
+  version   Int      @default(0)
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  tier                 String   // PRO
+  status               String   // active, canceled, past_due
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  stripeSubscriptionId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  User                 User     @relation(fields: [userId], references: [id])
+}
+
