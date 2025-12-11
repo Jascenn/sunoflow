@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getSunoClient } from '@/lib/suno-client';
 import { SunoGenerateParams } from '@/lib/types/suno';
 import { getMembershipStatus } from '@/lib/membership';
+import { Prisma } from '@prisma/client';
 
 export const runtime = 'nodejs';
 
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Transaction - Use Prisma transaction to ensure atomicity
     // Increase timeout to 60 seconds to account for slow Suno API responses
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       console.log('💰 [GENERATE] Updating wallet balance');
 
       // a. Decrement wallet balance
