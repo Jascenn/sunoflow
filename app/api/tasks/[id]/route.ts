@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 /**
  * Get a single task by ID

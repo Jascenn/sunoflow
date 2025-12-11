@@ -6,7 +6,7 @@ import { SunoGenerateParams } from '@/lib/types/suno';
 import { getMembershipStatus } from '@/lib/membership';
 import { Prisma } from '@prisma/client';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {

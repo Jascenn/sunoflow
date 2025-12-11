@@ -1,8 +1,16 @@
 
 import { NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { auth } from '@clerk/nextjs/server';
+
+export const runtime = 'edge';
 import { prisma } from '@/lib/prisma';
+
+export const runtime = 'edge';
 import { NextRequest } from 'next/server';
+
+export const runtime = 'edge';
 
 const PACKAGES: Record<string, number> = {
     'credits_100': 100,

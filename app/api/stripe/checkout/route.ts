@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { auth, currentUser } from '@clerk/nextjs/server';
+
+export const runtime = 'edge';
 import { prisma } from '@/lib/prisma';
+
+export const runtime = 'edge';
 import { stripe } from '@/lib/stripe';
+
+export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
     try {

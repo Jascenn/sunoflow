@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserAvatarUrl } from '@/lib/avatar';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 /**
  * Clerk Webhook Handler

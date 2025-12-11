@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { auth } from '@clerk/nextjs/server';
+
+export const runtime = 'edge';
 import { prisma } from '@/lib/prisma';
+
+export const runtime = 'edge';
 
 export async function GET() {
     try {
@@ -40,6 +46,8 @@ export async function GET() {
 }
 
 import { NextRequest } from 'next/server';
+
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
     try {

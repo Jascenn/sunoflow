@@ -3,7 +3,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 /**
  * Manual user sync endpoint
