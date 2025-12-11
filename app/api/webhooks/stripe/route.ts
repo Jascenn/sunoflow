@@ -4,16 +4,12 @@ import { stripe } from "@/lib/stripe";
 export const runtime = 'edge';
 import { headers } from "next/headers";
 
-export const runtime = 'edge';
 import { NextResponse } from "next/server";
 
-export const runtime = 'edge';
 import { prisma } from "@/lib/prisma";
 
-export const runtime = 'edge';
 import Stripe from "stripe";
 
-export const runtime = 'edge';
 
 export async function POST(req: Request) {
     const body = await req.text();
