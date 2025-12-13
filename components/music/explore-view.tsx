@@ -1,9 +1,10 @@
 'use client';
 
 import { Compass, Play, Music } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
 import NextImage from 'next/image';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
 import { SunoMusicData } from '@/lib/types/suno';
 import { useLanguage } from '@/components/providers/language-provider';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -11,40 +12,30 @@ import { EmptyState } from '@/components/ui/empty-state';
 
 export function ExploreView() {
     const { t } = useLanguage();
-    const [data, setData] = useState<SunoMusicData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        async function fetchFeed() {
-            try {
-                const response = await axios.get('/api/explore?page=1');
-                if (response.data.success) {
-                    setData(response.data.data);
-                } else {
-                    setError(response.data.error || 'Failed to load feed');
-                }
-            } catch (err) {
-                setError('Failed to fetch data');
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchFeed();
-    }, []);
+    // React Query for data fetching
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['explore-feed', 1], // Include page in key if pagination is added later
+        queryFn: () => apiClient.getExploreFeed(1),
+        staleTime: 1000 * 60 * 5, // 5 minutes cache
+        refetchOnWindowFocus: true, // Auto-refresh when returning to tab
+    });
 
-    if (loading) {
+    // Ensure data is typed correctly as SunoMusicData[]
+    const tracks = (data as SunoMusicData[]) || [];
+
+    if (isLoading) {
         return (
             <LoadingSpinner text={t('explore.discovering')} className="min-h-[50vh]" />
         );
     }
 
-    if (error || data.length === 0) {
+    if (error || tracks.length === 0) {
         return (
             <EmptyState
                 icon={Compass}
                 title={t('sidebar.explore')}
-                description={error || t('explore.no_music')}
+                description={error ? 'Failed to load feed' : t('explore.no_music')}
                 className="min-h-[50vh]"
             />
         );
@@ -64,11 +55,11 @@ export function ExploreView() {
             <section>
                 <h2 className="text-lg font-semibold mb-4 text-stone-900">{t('explore.trending_now')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {data.map((track) => (
+                    {tracks.map((track) => (
                         <div key={track.id} className="group bg-white rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer flex flex-col h-full hover:-translate-y-1">
                             <div className="h-40 w-full bg-stone-100 relative flex items-center justify-center overflow-hidden shrink-0">
                                 {track.imageUrl ? (
-                                    <NextImage src={track.imageUrl} alt={track.title} fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                                    <NextImage src={track.imageUrl} alt={track.title || 'Music cover'} fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                                 ) : (
                                     <Music className="w-10 h-10 text-stone-300" />
                                 )}

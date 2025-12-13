@@ -9,7 +9,6 @@ import { GeneratorForm, type GeneratorTemplate } from '@/components/music/genera
 import { TaskListV2 } from '@/components/music/task-list-v2';
 import { useTasks } from '@/hooks/use-tasks';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { Loader2, User, Coins, RefreshCw, Home, Sparkles, Trophy, Play, Music, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -17,6 +16,8 @@ import { promptExamples } from '@/lib/prompt-examples';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ExploreView } from '@/components/music/explore-view';
+import { apiClient, WalletData } from '@/lib/api-client';
+import { SunoGenerateParams } from '@/lib/types/suno';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
 
 const FEATURED_EXAMPLES = promptExamples.slice(0, 4).map((ex, index) => ({
@@ -55,50 +56,31 @@ function DashboardContent() {
     setFilter(f);
   }, [searchParams]);
 
+
+
+  // ... (inside DashboardContent)
   // 获取用户钱包余额
-  const { data: walletData, refetch: refetchWallet } = useQuery({
+  const { data: walletData, refetch: refetchWallet } = useQuery<WalletData>({
     queryKey: ['wallet'],
-    queryFn: async () => {
-      const res = await axios.get('/api/wallet');
-      return res.data;
-    },
+    queryFn: apiClient.getWallet,
     enabled: !!user,
   });
 
-  const handleGenerate = async (params: any) => {
+  const handleGenerate = async (params: SunoGenerateParams) => {
     try {
       setIsGenerating(true);
-      const response = await axios.post('/api/generate', params);
+      const response = await apiClient.generateMusic(params);
 
-      if (response.data.success) {
-        toast.success('Generated successfully!', {
-          description: `Balance: ${response.data.balance} credits`,
-        });
-        refetch();
-        refetchWallet();
-      }
-    } catch (error: any) {
-      console.error('Generation error:', error);
-      const errorMsg = error.response?.data?.error;
+      // Success is guaranteed if no error thrown by apiClient
+      toast.success('Generated successfully!', {
+        description: `Balance: ${response.balance} credits`,
+      });
+      refetch();
+      refetchWallet();
 
-      if (error.response?.status === 402) {
-        toast.error(t('billing.title'), { // Reuse title for "Billing & Plans" or similar context
-          description: t('billing.plan.free.desc') ? '余额不足，请充值' : 'Insufficient Credits', // Fallback or strictly user t()
-          action: {
-            label: t('dashboard.top_up'),
-            onClick: () => window.location.href = '/account/billing',
-          },
-        });
-      } else if (errorMsg === 'Generation limit reached') {
-        // Handle concurrent limit error with translation
-        toast.error(t('task.limit_title') || '生成限制', {
-          description: t('task.limit_reached') || '并行任务过多，请稍后再试 / Limit reached, try again later.',
-        });
-      } else {
-        toast.error('Failed', {
-          description: error.response?.data?.details || error.message,
-        });
-      }
+    } catch (error) {
+      // Error is already handled/toasted by apiClient
+      console.error('Generation flow error:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -109,19 +91,17 @@ function DashboardContent() {
     try {
       setIsSyncing(true);
       toast.info(t('dashboard.sync.start') || '正在同步任务...', { description: t('dashboard.sync.desc') || '正在从 Suno API 获取最新数据' });
-      const response = await axios.post('/api/sync-tasks');
-      if (response.data.success) {
-        const { stats } = response.data;
-        toast.success(t('dashboard.sync.success') || '同步完成', {
-          description: `${t('dashboard.sync.created') || '新增'} ${stats.created}, ${t('dashboard.sync.updated') || '更新'} ${stats.updated}`,
-        });
-        refetch();
-      }
-    } catch (error: any) {
-      console.error('Sync error:', error);
-      toast.error(t('dashboard.sync.failed') || '同步失败', {
-        description: error.response?.data?.details || error.message,
+
+      const response = await apiClient.syncTasks();
+
+      const { stats } = response;
+      toast.success(t('dashboard.sync.success') || '同步完成', {
+        description: `${t('dashboard.sync.created') || '新增'} ${stats.created}, ${t('dashboard.sync.updated') || '更新'} ${stats.updated}`,
       });
+      refetch();
+
+    } catch (error) {
+      // Handled by apiClient
     } finally {
       setIsSyncing(false);
     }
@@ -134,7 +114,7 @@ function DashboardContent() {
 
     const interval = setInterval(async () => {
       try {
-        await axios.post('/api/sync-tasks'); // Trigger backend sync
+        await apiClient.syncTasks(); // Trigger backend sync
         refetch(); // Refresh UI
       } catch (err) {
         console.error('Auto-poll error', err);
