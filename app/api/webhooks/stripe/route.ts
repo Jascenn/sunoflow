@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 
 import { stripe } from "@/lib/stripe";
 
