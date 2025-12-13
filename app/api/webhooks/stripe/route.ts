@@ -100,7 +100,7 @@ export async function POST(req: Request) {
                     stripeSubscriptionId: subscription.id,
                     stripeCustomerId: subscription.customer as string,
                     membershipTier: 'PRO',
-                    membershipExpiresAt: new Date(subscription.current_period_end * 1000),
+                    membershipExpiresAt: new Date((subscription as any).current_period_end * 1000),
                 },
             });
 
@@ -111,15 +111,15 @@ export async function POST(req: Request) {
                     userId: session.metadata.internalId,
                     tier: 'PRO',
                     status: subscription.status,
-                    currentPeriodStart: new Date(subscription.current_period_start * 1000),
-                    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                    currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+                    currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
                     stripeSubscriptionId: subscription.id,
                 },
                 update: {
                     tier: 'PRO',
                     status: subscription.status,
-                    currentPeriodStart: new Date(subscription.current_period_start * 1000),
-                    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                    currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+                    currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
                     stripeSubscriptionId: subscription.id,
                 }
             });
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
             where: { stripeSubscriptionId: subscription.id },
             data: {
                 membershipTier: 'PRO',
-                membershipExpiresAt: new Date(subscription.current_period_end * 1000),
+                membershipExpiresAt: new Date((subscription as any).current_period_end * 1000),
             },
         });
     }
