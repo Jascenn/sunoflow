@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { Music, Zap, Coins, Download, ArrowRight, Sparkles, Check, PlayCircle, Star, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -75,8 +76,8 @@ export default function Home() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-black">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center relative">
+              <Image src="/logo.png" alt="SunoFlow" fill className="object-cover" sizes="32px" />
             </div>
             <span>SunoFlow</span>
           </Link>
@@ -197,7 +198,7 @@ export default function Home() {
                 {t('showcase.subtitle')}
               </p>
             </div>
-            <Link href="/explore" className="text-black font-semibold hover:opacity-70 flex items-center gap-1 border-b border-black pb-0.5 leading-none">
+            <Link href="/dashboard?filter=explore" className="text-black font-semibold hover:opacity-70 flex items-center gap-1 border-b border-black pb-0.5 leading-none">
               {t('showcase.explore')} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -226,8 +227,8 @@ export default function Home() {
       </section>
 
       {/* Testimonial / Social Proof - Refined (No dark background) */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <section className="py-24 bg-white relative overflow-hidden text-center">
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
           <Quote className="w-12 h-12 text-stone-200 mx-auto mb-8" />
           <h2 className="text-3xl md:text-5xl font-bold mb-10 leading-tight text-black">
             {t('testimonial.quote')}
@@ -244,12 +245,49 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-24 bg-stone-50">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-12 text-center text-black">{t('faq.title')}</h2>
+          <div className="space-y-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                <h3 className="text-lg font-bold text-black mb-2">{t(`faq.q${i}` as any)}</h3>
+                <p className="text-stone-600 leading-relaxed">{t(`faq.a${i}` as any)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-32 bg-black text-white text-center relative overflow-hidden">
+        {/* Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-purple-500/20 to-blue-500/20 rounded-full blur-[100px] opacity-70 pointer-events-none"></div>
+
+        <div className="max-w-3xl mx-auto px-6 relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+            {t('cta.title')}
+          </h2>
+          <p className="text-xl text-stone-400 mb-10">
+            {t('cta.subtitle')}
+          </p>
+          <Link
+            href={userId ? "/dashboard" : "/sign-up"}
+            className="inline-flex h-12 px-8 rounded-full bg-white text-black text-base font-bold items-center gap-2 hover:bg-stone-200 transition-all transform hover:-translate-y-1"
+          >
+            {userId ? t('nav.dashboard') : t('cta.btn')}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-white py-12 border-t border-stone-100">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-black">
-            <div className="w-6 h-6 bg-black rounded flex items-center justify-center text-white">
-              <Sparkles className="w-3 h-3" />
+            <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center relative">
+              <Image src="/logo.png" alt="SunoFlow" fill className="object-cover" sizes="24px" />
             </div>
             <span>SunoFlow</span>
           </div>
@@ -257,9 +295,9 @@ export default function Home() {
             {t('footer.copyright')}
           </p>
           <div className="flex gap-6 text-sm text-stone-500 font-medium">
-            <a href="#" className="hover:text-black transition-colors">{t('footer.terms')}</a>
-            <a href="#" className="hover:text-black transition-colors">{t('footer.privacy')}</a>
-            <a href="#" className="hover:text-black transition-colors">{t('footer.support')}</a>
+            <Link href="/terms" className="hover:text-black transition-colors">{t('footer.terms')}</Link>
+            <Link href="/privacy" className="hover:text-black transition-colors">{t('footer.privacy')}</Link>
+            <a href="mailto:support@sunoflow.com" className="hover:text-black transition-colors">{t('footer.support')}</a>
           </div>
         </div>
       </footer>

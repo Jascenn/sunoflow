@@ -25,6 +25,7 @@ model Task {
   isFavorite    Boolean  @default(false)
   progress      String?  // 进度信息,如 "50%" 或 "生成中..."
   failReason    String?  // 失败原因
+  metadata      Json?    // 存储额外的元数据，如生成的歌词
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   User          User     @relation(fields: [userId], references: [id])

@@ -22,6 +22,7 @@ interface Api302MusicData {
   status?: string;
   duration?: number;
   created_at?: string;
+  metadata?: any;
 }
 
 class SunoClient {
@@ -399,10 +400,6 @@ class SunoClient {
       }
     ];
 
-    // Forcing mock data return for debugging/demo purposes since API is unstable
-    return mockData;
-
-    /*
     if (this.provider === '302ai') {
       try {
         // 尝试 302.ai 常见 endpoint
@@ -421,7 +418,7 @@ class SunoClient {
                 duration: item.duration ? parseFloat(item.duration) : null,
                 tags: item.tags || item.metadata?.tags,
                 prompt: item.prompt || item.gpt_description_prompt,
-                lyric: item.metadata?.prompt || item.lyric 
+                lyric: item.metadata?.prompt || item.lyric
               }));
             }
           } catch (e) {
@@ -440,7 +437,6 @@ class SunoClient {
       // Kie implementation or others
       return [];
     }
-    */
   }
 }
 

@@ -26,7 +26,7 @@ export default function PaymentSuccessPage() {
                             返回控制台
                         </Button>
                     </Link>
-                    <Link href="/recharge" className="block">
+                    <Link href="/billing" className="block">
                         <Button variant="outline" className="w-full border-stone-200 hover:bg-stone-50 rounded-xl py-6">
                             继续充值
                             <ArrowRight className="w-4 h-4 ml-2" />

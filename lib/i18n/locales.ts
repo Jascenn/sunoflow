@@ -74,6 +74,10 @@ export const dictionary = {
         'dashboard.empty_fav.title': 'No favorites yet',
         'dashboard.empty_fav.desc': 'Heart a song to see it here.',
 
+
+        'dashboard.style_notice_title': 'Auto-fill not implemented yet',
+        'dashboard.style_notice_desc': 'Copy style manually for now.',
+
         // Generator
         'generator.mode.description': 'Song Description',
         'generator.mode.custom': 'Custom Lyrics',
@@ -97,9 +101,14 @@ export const dictionary = {
         'task.status.generating': 'Generating',
         'task.action.download': 'Download',
         'task.action.favorite': 'Favorite',
+        'task.confirm_delete': 'Are you sure you want to delete this task?',
         'task.action.delete': 'Delete',
         'task.action.lyrics': 'Lyrics',
         'task.items_count': 'items',
+        'task.limit_reached': 'Generation limit reached. Please wait or upgrade.',
+        'task.limit_title': 'Limit Reached',
+        'task.untitled': 'Untitled Song',
+        'time.just_now': 'Just now',
         'task.version': 'Version',
         'task.fail.sensitive': 'Sensitive Content',
         'task.fail.timeout': 'Timeout',
@@ -184,6 +193,29 @@ export const dictionary = {
         'settings.dark': 'Dark',
         'settings.system': 'System',
         'settings.notif_saved': 'Notification settings saved',
+
+        'dashboard.sync.start': 'Syncing tasks...',
+        'dashboard.sync.desc': 'Fetching latest data from Suno API',
+        'dashboard.sync.success': 'Sync complete',
+        'dashboard.sync.created': 'Created',
+        'dashboard.sync.updated': 'Updated',
+        'dashboard.sync.failed': 'Sync failed',
+        'dashboard.sync.title': 'Sync Status',
+        // Landing Page FAQ
+        'faq.title': 'Frequently Asked Questions',
+        'faq.q1': 'Can I use the music commercially?',
+        'faq.a1': 'Yes! If you are on the Pro Plan, you own full commercial rights to the songs you generate.',
+        'faq.q2': 'How many songs can I create?',
+        'faq.a2': 'The Free plan gives you 50 credits daily (about 10 songs). The Pro plan gives you 2500 credits monthly.',
+        'faq.q3': 'Do you support lyrics generation?',
+        'faq.a3': 'Absolutely. Our built-in AI lyrics editor helps you write perfectly structured verses and choruses.',
+        'faq.q4': 'Can I upload my own voice?',
+        'faq.a4': 'Currently we support text-to-music. Audio upload and voice cloning features are coming in V4.',
+
+        // Landing Page CTA
+        'cta.title': 'Ready to make your hit song?',
+        'cta.subtitle': 'Join thousands of creators using SunoFlow today.',
+        'cta.btn': 'Get Started for Free',
     },
     zh: {
         // Navigation
@@ -258,6 +290,9 @@ export const dictionary = {
         'dashboard.empty_fav.title': '暂无收藏',
         'dashboard.empty_fav.desc': '点亮爱心收藏您喜欢的歌曲。',
 
+        'dashboard.style_notice_title': '功能暂未开放',
+        'dashboard.style_notice_desc': '请暂时手动复制风格描述。',
+
         // Generator
         'generator.mode.description': '歌曲描述',
         'generator.mode.custom': '自定义歌词',
@@ -270,7 +305,7 @@ export const dictionary = {
         'generator.btn.generate': '立即生成',
         'generator.btn.generating': '生成中...',
         'generator.placeholder.desc': '详细描述您想要创作的歌曲...',
-        'generator.placeholder.lyrics': '[Verse 1]\n前奏响起...\n\n[Chorus]\n大声唱出来...',
+        'generator.placeholder.lyrics': '[Verse 1]\\n前奏响起...\\n\\n[Chorus]\\n大声唱出来...',
         'generator.placeholder.style': '流行, 爵士, 重金属...',
         'generator.placeholder.title': '我的主打歌',
         'generator.generate_lyrics': 'AI 生成歌词',
@@ -281,16 +316,20 @@ export const dictionary = {
         'task.status.generating': '生成中',
         'task.action.download': '下载',
         'task.action.favorite': '收藏',
+        'task.confirm_delete': '确定要删除这个任务吗？',
         'task.action.delete': '删除',
         'task.action.lyrics': '歌词',
         'task.items_count': '首曲目',
+        'task.limit_reached': '并发生成任务达到上限，请稍候再试或升级会员。',
+        'task.limit_title': '生成限制',
+        'task.untitled': '无题',
+        'time.just_now': '刚刚',
         'task.version': '版本',
         'task.fail.sensitive': '敏感内容',
         'task.fail.timeout': '超时',
         'task.fail.network': '网络错误',
         'task.fail.unknown': '未知错误',
         'task.refunded': '积分已退',
-
         // Billing
         'billing.title': '订阅与账单',
         'billing.subtitle': '管理您的订阅计划和积分余额。',
@@ -368,6 +407,30 @@ export const dictionary = {
         'settings.dark': '深色',
         'settings.system': '跟随系统',
         'settings.notif_saved': '通知设置已保存',
+
+        'dashboard.sync.start': '正在同步任务...',
+        'dashboard.sync.desc': '正在从 Suno API 获取最新数据',
+        'dashboard.sync.success': '同步完成',
+        'dashboard.sync.created': '新增',
+        'dashboard.sync.updated': '更新',
+        'dashboard.sync.failed': '同步失败',
+        'dashboard.sync.title': '同步状态',
+
+        // Landing Page FAQ
+        'faq.title': '常见问题',
+        'faq.q1': '我可以将生成的音乐用于商业用途吗？',
+        'faq.a1': '可以！如果您订阅了专业计划 (Pro Plan)，您将拥有所生成歌曲的完整商业版权。',
+        'faq.q2': '我可以创作多少首歌？',
+        'faq.a2': '免费计划每日赠送 50 积分（约 10 首歌）。专业计划每月提供 2500 积分。',
+        'faq.q3': '支持自动生成歌词吗？',
+        'faq.a3': '当然。我们内置的 AI 歌词编辑器能帮您写出结构完美的歌词。',
+        'faq.q4': '我可以上传自己的声音吗？',
+        'faq.a4': '目前支持文本生成音乐。音频上传和声音克隆功能将在 V4 版本中推出。',
+
+        // Landing Page CTA
+        'cta.title': '准备好创作您的主打歌了吗？',
+        'cta.subtitle': '立即加入 SunoFlow，与数千名创作者一起挥洒灵感。',
+        'cta.btn': '免费开始创作',
     }
 };
 

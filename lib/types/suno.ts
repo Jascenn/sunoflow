@@ -38,6 +38,7 @@ export interface SunoMusicData {
   duration?: number | null;
   gptDescriptionPrompt?: string;
   lyric?: string;
+  metadata?: any;
 }
 
 // 任务响应数据 (嵌套在 data.response 中)

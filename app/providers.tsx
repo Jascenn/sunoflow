@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'sonner';
+
 import { LanguageProvider } from '@/components/providers/language-provider';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -26,7 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
           {children}
         </ThemeProvider>
       </LanguageProvider>
-      <Toaster />
+
     </QueryClientProvider>
   );
 }

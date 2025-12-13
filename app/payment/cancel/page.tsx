@@ -20,7 +20,7 @@ export default function PaymentCancelPage() {
                 </p>
 
                 <div className="space-y-3">
-                    <Link href="/recharge" className="block">
+                    <Link href="/billing" className="block">
                         <Button className="w-full bg-stone-900 hover:bg-stone-800 text-white rounded-xl py-6">
                             <RefreshCw className="w-4 h-4 mr-2" />
                             重新尝试

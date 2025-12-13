@@ -12,12 +12,20 @@ import { toast } from 'sonner'; // Add Toast import
 
 import { useLanguage } from '@/components/providers/language-provider';
 
+export interface GeneratorTemplate {
+  prompt?: string;
+  tags?: string;
+  title?: string;
+  mode?: 'description' | 'custom';
+}
+
 interface GeneratorFormProps {
   onGenerate: (params: any) => Promise<void>;
   isGenerating: boolean;
+  template?: GeneratorTemplate;
 }
 
-export function GeneratorForm({ onGenerate, isGenerating }: GeneratorFormProps) {
+export function GeneratorForm({ onGenerate, isGenerating, template }: GeneratorFormProps) {
   const { t } = useLanguage();
   // Mode State
   const [mode, setMode] = useState<'description' | 'custom'>('description');
@@ -33,6 +41,25 @@ export function GeneratorForm({ onGenerate, isGenerating }: GeneratorFormProps) 
   // UI State
   const [showExamples, setShowExamples] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('全部');
+
+  // Listen for external template changes
+  React.useEffect(() => {
+    if (template) {
+      if (template.mode) setMode(template.mode);
+      if (template.title) setTitle(template.title);
+
+      // Smartly populate based on mode
+      if (template.mode === 'custom') {
+        // In custom mode, 'prompt' state is the Style field
+        setPrompt(template.tags || '');
+        // We could populate lyrics if provided, but templates usually don't have full lyrics
+      } else {
+        // In description mode, 'prompt' state is the Description field
+        // Prefer long prompt, fallback to tags
+        setPrompt(template.prompt || template.tags || '');
+      }
+    }
+  }, [template]);
 
   const handleUseExample = (example: PromptExample) => {
     setPrompt(example.prompt);

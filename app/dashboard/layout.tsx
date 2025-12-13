@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/sidebar';
 import { SettingsPanel } from '@/components/dashboard/settings-panel';
 import { UserMenuPanel } from '@/components/dashboard/user-menu';
 import { GlobalPlayer } from '@/components/music/global-player';
+import { MobileNav } from '@/components/layout/mobile-nav';
 
 export default function DashboardLayout({
     children,
@@ -23,11 +24,17 @@ export default function DashboardLayout({
     }, []);
 
     return (
-        <div className="min-h-screen bg-white flex flex-row font-sans text-[#37352f]">
-            <Sidebar onSettingsClick={() => setShowSettings(true)} />
-            <div className="flex-1 h-screen overflow-hidden">
-                {children}
+        <div className="min-h-screen bg-white flex flex-col md:flex-row font-sans text-[#37352f]">
+            <MobileNav onSettingsClick={() => setShowSettings(true)} />
+
+            <div className="hidden md:block h-screen sticky top-0">
+                <Sidebar onSettingsClick={() => setShowSettings(true)} />
             </div>
+
+            <main className="flex-1 h-[calc(100vh-65px)] md:h-screen overflow-hidden relative">
+                {children}
+            </main>
+
             {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
             {showUserMenu && <UserMenuPanel onClose={() => setShowUserMenu(false)} />}
             <GlobalPlayer />
