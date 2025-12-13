@@ -5,6 +5,7 @@ import { ReactNode, useState } from 'react';
 import { ThemeProvider } from 'next-themes';
 
 import { LanguageProvider } from '@/components/providers/language-provider';
+import { AuthSync } from '@/components/common/auth-sync';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -22,7 +23,8 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <AuthSync />
           {children}
         </ThemeProvider>
       </LanguageProvider>

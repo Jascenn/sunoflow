@@ -41,6 +41,14 @@ export interface ExploreData {
     error?: string;
 }
 
+export interface SyncUserResponse {
+    message?: string;
+    user?: unknown;
+    Wallet?: unknown;
+    alreadyExists?: boolean;
+    error?: string;
+}
+
 // --- Client ---
 
 // Create an axios instance for consistency
@@ -144,6 +152,21 @@ export const apiClient = {
         } catch (error) {
             // Explore feed errors might not need a toast if it's just initial load
             console.error('Explore feed error:', error);
+            throw error;
+        }
+    },
+
+
+    /**
+     * Sync user data (ensure user exists in DB)
+     */
+    syncUser: async (): Promise<SyncUserResponse> => {
+        try {
+            const response = await client.post<SyncUserResponse>('/api/sync-user');
+            return response.data;
+        } catch (error) {
+            // Log but don't toast, as this happens in background
+            console.error('User sync failed:', error);
             throw error;
         }
     }
