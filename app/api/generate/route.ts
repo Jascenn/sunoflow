@@ -90,92 +90,125 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ [GENERATE] Credit check passed, starting transaction');
 
-    // 3. Transaction - Use Prisma transaction to ensure atomicity
-    // Increase timeout to 60 seconds to account for slow Suno API responses
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      console.log('💰 [GENERATE] Updating wallet balance');
+    // 3. Transaction Step 1: Deduct balance
+    // We do this FIRST to ensure user has funds.
+    const transactionId = crypto.randomUUID();
+    let initialTransaction: any;
 
-      // a. Decrement wallet balance
-      const updatedWallet = await tx.wallet.update({
-        where: { userId: user.id },
-        data: {
-          balance: { decrement: COST_PER_GENERATION },
-          version: { increment: 1 }, // Optimistic locking
-        },
+    try {
+      initialTransaction = await prisma.$transaction(async (tx) => {
+        // a. Decrement wallet balance
+        const updatedWallet = await tx.wallet.update({
+          where: { userId: user.id },
+          data: {
+            balance: { decrement: COST_PER_GENERATION },
+            version: { increment: 1 },
+          },
+        });
+
+        if (updatedWallet.balance < 0) {
+          throw new Error('Insufficient balance (race condition)');
+        }
+
+        // b. Create transaction record
+        return await tx.transaction.create({
+          data: {
+            id: transactionId,
+            userId: user.id,
+            amount: -COST_PER_GENERATION,
+            type: 'CONSUME',
+            description: `Music generation: ${params.prompt.slice(0, 50)}...`,
+          },
+        });
       });
 
-      console.log('💰 [GENERATE] Wallet updated:', {
-        oldBalance: user.Wallet?.balance,
-        newBalance: updatedWallet.balance,
-      });
+      console.log('💰 [GENERATE] Balance deducted, transaction:', transactionId);
+    } catch (err: any) {
+      console.error('❌ [GENERATE] Failed to deduct balance:', err);
+      return NextResponse.json(
+        { error: 'Transaction failed', details: err.message },
+        { status: 500 }
+      );
+    }
 
-      // b. Create transaction record
-      const transaction = await tx.transaction.create({
-        data: {
-          id: crypto.randomUUID(),
-          userId: user.id,
-          amount: -COST_PER_GENERATION,
-          type: 'CONSUME',
-          description: `Music generation: ${params.prompt.slice(0, 50)}...`,
-        },
-      });
-
-      console.log('📝 [GENERATE] Transaction record created:', transaction.id);
-
-      // c. Call Suno API
-      console.log('🎵 [GENERATE] Calling Suno API with params:', JSON.stringify({
-        prompt: params.prompt.slice(0, 100) + '...',
-        model: params.model,
-        customMode: params.customMode,
-        instrumental: params.instrumental,
-        style: params.style,
-        title: params.title,
-      }, null, 2));
-
+    // 4. External API Call (Outside Transaction)
+    let taskId: string;
+    try {
+      console.log('🎵 [GENERATE] Calling Suno API...');
       const sunoClient = getSunoClient();
-      const taskId = await sunoClient.generate(params);
+      // This can take up to 60s, so we MUST NOT hold a DB lock
+      taskId = await sunoClient.generate(params);
+      console.log('✅ [GENERATE] Suno API success, taskId:', taskId);
+    } catch (apiError: any) {
+      console.error('❌ [GENERATE] Suno API failed, refunding...', apiError);
 
-      console.log('✅ [GENERATE] Suno API returned taskId:', taskId);
+      // 5. Refund on Failure
+      try {
+        await prisma.$transaction(async (tx) => {
+          await tx.wallet.update({
+            where: { userId: user.id },
+            data: {
+              balance: { increment: COST_PER_GENERATION },
+              version: { increment: 1 }
+            },
+          });
 
-      // d. Create Task record
-      const task = await tx.task.create({
+          await tx.transaction.create({
+            data: {
+              userId: user.id,
+              amount: COST_PER_GENERATION,
+              type: 'REFUND',
+              referenceId: transactionId,
+              description: `Refund for failed generation: ${apiError.message?.slice(0, 50)}`,
+            },
+          });
+        });
+        console.log('💰 [GENERATE] Refund successful');
+      } catch (refundError) {
+        console.error('🔥 [GENERATE] CRITICAL: Refund failed!', refundError);
+        // In production, you would send this to Sentry/PagerDuty
+      }
+
+      return NextResponse.json(
+        { error: 'Generation failed', details: apiError.message },
+        { status: 500 }
+      );
+    }
+
+    // 6. Record Success (Create Task)
+    try {
+      const task = await prisma.task.create({
         data: {
-          id: crypto.randomUUID(),
           userId: user.id,
           sunoTaskId: taskId,
           prompt: params.prompt,
-          tags: params.style || null,  // style 在新API中对应之前的 tags
-          model: params.model || 'V3_5',  // 使用新的模型格式
+          tags: params.style || null,
+          model: params.model || 'V3_5',
           status: 'PENDING',
           title: params.title || null,
-          updatedAt: new Date(),
         },
       });
 
-      console.log('✅ [GENERATE] Task record created:', task.id);
+      console.log('✅ [GENERATE] Task created:', task.id);
 
-      return {
-        task,
-        transaction,
-        taskId,
-        newBalance: updatedWallet.balance,
-      };
-    }, {
-      timeout: 60000, // 60 seconds timeout for slow Suno API responses
-    });
+      return NextResponse.json({
+        success: true,
+        taskId: task.id,
+        sunoTaskId: taskId,
+      });
+    } catch (dbError: any) {
+      // Only the local task record failed. Use Suno ID to track? 
+      // For now, we return partial success or error. 
+      // Ideally we might want to refund here too, or just log it.
+      console.error('❌ [GENERATE] Failed to save task record:', dbError);
+      return NextResponse.json({
+        success: true,
+        warning: 'Task created but not saved to DB',
+        sunoTaskId: taskId
+      });
+    }
 
-    console.log('🎉 [GENERATE] Generation successful:', {
-      taskId: result.task.id,
-      sunoTaskId: result.taskId,
-      newBalance: result.newBalance,
-    });
 
-    return NextResponse.json({
-      success: true,
-      taskId: result.task.id,
-      sunoTaskId: result.taskId,
-      balance: result.newBalance,
-    });
 
   } catch (error: any) {
     console.error('❌ [GENERATE] Error:', error);
