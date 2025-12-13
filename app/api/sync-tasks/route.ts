@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSunoClient } from '@/lib/suno-client';
 
-
+import { getErrorMessage } from '@/lib/utils';
 
 /**
  * Sync tasks from Suno API to our database
@@ -115,8 +115,8 @@ export async function POST() {
           });
           createdCount++;
         }
-      } catch (error: any) {
-        console.error(`❌ [SYNC] Failed to sync task ${sunoTask.taskId}:`, error.message);
+      } catch (error: unknown) {
+        console.error(`❌ [SYNC] Failed to sync task ${sunoTask.taskId}:`, getErrorMessage(error));
         skippedCount++;
       }
     }
@@ -134,14 +134,14 @@ export async function POST() {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [SYNC] Error:', error);
-    console.error('❌ [SYNC] Error stack:', error.stack);
+    // console.error('❌ [SYNC] Error stack:', error.stack);
 
     return NextResponse.json(
       {
         error: 'Failed to sync tasks',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );

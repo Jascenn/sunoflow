@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserAvatarUrl } from '@/lib/avatar';
+import { getErrorMessage } from '@/lib/utils';
 
 
 
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (type === 'user.created') {
       const { id: clerkId, email_addresses, first_name, last_name, image_url } = data;
 
-      const primaryEmail = email_addresses.find((e: any) => e.id === data.primary_email_address_id);
+      const primaryEmail = email_addresses.find((e: { id: string; email_address: string }) => e.id === data.primary_email_address_id);
 
       if (!primaryEmail?.email_address) {
         return NextResponse.json(
@@ -84,12 +85,12 @@ export async function POST(request: NextRequest) {
       message: 'Event received but not processed',
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Webhook error:', error);
     return NextResponse.json(
       {
         error: 'Webhook processing failed',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );

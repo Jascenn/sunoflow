@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
 import { prisma } from '@/lib/prisma';
+import { getErrorMessage } from '@/lib/utils';
 
 import { NextRequest } from 'next/server';
 
@@ -86,8 +87,11 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({ success: true, credits });
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('[RECHARGE] Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Internal Server Error', details: getErrorMessage(error) },
+            { status: 500 }
+        );
     }
 }

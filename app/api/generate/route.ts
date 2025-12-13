@@ -8,6 +8,8 @@ import { Prisma } from '@prisma/client';
 
 
 
+import { getErrorMessage } from '@/lib/utils';
+
 export async function POST(request: NextRequest) {
   try {
     console.log('🎵 [GENERATE] Starting music generation request');
@@ -93,7 +95,7 @@ export async function POST(request: NextRequest) {
     // 3. Transaction Step 1: Deduct balance
     // We do this FIRST to ensure user has funds.
     const transactionId = crypto.randomUUID();
-    let initialTransaction: any;
+    let initialTransaction;
 
     try {
       initialTransaction = await prisma.$transaction(async (tx) => {
@@ -123,10 +125,10 @@ export async function POST(request: NextRequest) {
       });
 
       console.log('💰 [GENERATE] Balance deducted, transaction:', transactionId);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [GENERATE] Failed to deduct balance:', err);
       return NextResponse.json(
-        { error: 'Transaction failed', details: err.message },
+        { error: 'Transaction failed', details: getErrorMessage(err) },
         { status: 500 }
       );
     }
@@ -139,7 +141,7 @@ export async function POST(request: NextRequest) {
       // This can take up to 60s, so we MUST NOT hold a DB lock
       taskId = await sunoClient.generate(params);
       console.log('✅ [GENERATE] Suno API success, taskId:', taskId);
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
       console.error('❌ [GENERATE] Suno API failed, refunding...', apiError);
 
       // 5. Refund on Failure
@@ -159,7 +161,7 @@ export async function POST(request: NextRequest) {
               amount: COST_PER_GENERATION,
               type: 'REFUND',
               referenceId: transactionId,
-              description: `Refund for failed generation: ${apiError.message?.slice(0, 50)}`,
+              description: `Refund for failed generation: ${getErrorMessage(apiError).slice(0, 50)}`,
             },
           });
         });
@@ -170,7 +172,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: 'Generation failed', details: apiError.message },
+        { error: 'Generation failed', details: getErrorMessage(apiError) },
         { status: 500 }
       );
     }
@@ -196,7 +198,7 @@ export async function POST(request: NextRequest) {
         taskId: task.id,
         sunoTaskId: taskId,
       });
-    } catch (dbError: any) {
+    } catch (dbError: unknown) {
       // Only the local task record failed. Use Suno ID to track? 
       // For now, we return partial success or error. 
       // Ideally we might want to refund here too, or just log it.
@@ -210,20 +212,16 @@ export async function POST(request: NextRequest) {
 
 
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [GENERATE] Error:', error);
-    console.error('❌ [GENERATE] Error stack:', error.stack);
-    console.error('❌ [GENERATE] Error details:', {
-      message: error.message,
-      name: error.name,
-      response: error.response?.data,
-    });
+    // console.error('❌ [GENERATE] Error stack:', error.stack); // Stack might not exist on unknown
+    console.error('❌ [GENERATE] Error details:', getErrorMessage(error));
 
     // 4. Error Handling - Transaction will auto-rollback on error
     return NextResponse.json(
       {
         error: 'Failed to generate music',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );

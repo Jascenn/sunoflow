@@ -1,11 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getErrorMessage } from '@/lib/utils';
 
 // 
 
 export async function GET() {
   try {
+    // ... (lines 9-34 unchanged, implicitly)
     const { userId } = await auth();
 
     if (!userId) {
@@ -32,12 +34,12 @@ export async function GET() {
       wallet: user.Wallet,  // 注意：include 用 Wallet，但返回给前端用小写 wallet
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in /api/wallet:', error);
     return NextResponse.json(
       {
         error: 'Failed to fetch wallet',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );
