@@ -2,11 +2,14 @@
 
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useEffect, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 
 export function AuthSync() {
     const { isSignedIn, userId } = useAuth();
     const { user } = useUser();
+    const router = useRouter();
+    const pathname = usePathname();
     const syncedUserId = useRef<string | null>(null);
 
     useEffect(() => {
@@ -18,13 +21,18 @@ export function AuthSync() {
                 .then((data) => {
                     console.log('✅ [AuthSync] Sync success:', data);
                     syncedUserId.current = userId; // Mark as synced
+
+                    // If on landing page, redirect to dashboard
+                    if (pathname === '/') {
+                        router.push('/dashboard');
+                    }
                 })
                 .catch((err) => {
                     console.error('❌ [AuthSync] Sync failed:', err);
                     // Retry logic could go here, but for now simple logging
                 });
         }
-    }, [isSignedIn, userId, user]);
+    }, [isSignedIn, userId, user, pathname, router]);
 
     return null; // This component renders nothing
 }

@@ -17,21 +17,6 @@ export async function POST(req: NextRequest) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { planId } = await req.json();
-
-        if (!planId) {
-            return new NextResponse("Plan ID required", { status: 400 });
-        }
-
-        // Get the price ID from env based on plan
-        // Currently only supporting PRO plan
-        const priceId = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
-
-        if (!priceId) {
-            console.error("Missing Stripe Price ID");
-            return new NextResponse("Stripe configuration error", { status: 500 });
-        }
-
         const settingsUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || 'http://localhost:3000';
 
         // Check if user already has a stripe customer id
@@ -68,35 +53,60 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        // Determine Price and Mode
+        const { type, packageId } = await req.json();
+
+        let lineItems = [];
+        let mode: 'payment' | 'subscription' = 'payment';
+
+        if (type === 'credit') {
+            // Credit Recharges (One-time payment)
+            const PACKAGES: Record<string, { price: number, name: string }> = {
+                'credits_100': { price: 990, name: '100 Credits' }, // price in cents
+                'credits_500': { price: 3990, name: '500 Credits' },
+                'credits_2000': { price: 13990, name: '2000 Credits' },
+                'credits_5000': { price: 29990, name: '5000 Credits' },
+            };
+
+            const pkg = PACKAGES[packageId];
+            if (!pkg) return new NextResponse("Invalid package", { status: 400 });
+
+            lineItems = [{
+                price_data: {
+                    currency: 'cny',
+                    product_data: {
+                        name: pkg.name,
+                        description: `Recharge ${pkg.name.split(' ')[0]} AI generation credits`,
+                    },
+                    unit_amount: pkg.price,
+                },
+                quantity: 1,
+            }];
+            mode = 'payment';
+        } else {
+            // Subscriptions (Existing logic, but simplified to avoid ID dependency if needed)
+            return new NextResponse("Subscription not implemented in this demo mode", { status: 400 });
+        }
+
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({
             customer: dbUser.stripeCustomerId!,
-            line_items: [
-                {
-                    price: priceId,
-                    quantity: 1,
-                },
-            ],
-            mode: 'subscription',
-            success_url: `${settingsUrl}/membership?success=true`,
-            cancel_url: `${settingsUrl}/membership?canceled=true`,
+            line_items: lineItems,
+            mode: mode,
+            success_url: `${settingsUrl}/billing?success=true`, // Redirect back to billing
+            cancel_url: `${settingsUrl}/billing?canceled=true`,
             metadata: {
                 userId: userId,
                 internalId: dbUser.id,
-                planId: planId
+                type: type,
+                packageId: packageId
             },
-            subscription_data: {
-                metadata: {
-                    userId: userId,
-                    internalId: dbUser.id
-                }
-            }
         });
 
         return NextResponse.json({ url: session.url });
 
-    } catch (error) {
-        console.error("[STRIPE_CHECKOUT]", error);
-        return new NextResponse("Internal Error", { status: 500 });
+    } catch (error: any) {
+        console.error("[STRIPE_CHECKOUT]", error?.message || error);
+        return new NextResponse(`Stripe Error: ${error?.message}`, { status: 500 });
     }
 }

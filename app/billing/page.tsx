@@ -10,7 +10,7 @@ import {
     ChevronLeft, Coins, Crown, Check, Zap, Music, Clock, Shield,
     Sparkles, Star, Loader2, Gift, History, CreditCard, Receipt
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getErrorMessage } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { LoadingPage, LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -247,13 +247,22 @@ function RechargeTab() {
         try {
             setIsProcessing(true);
             setSelectedPkg(pkgId);
-            await axios.post('/api/recharge', { packageId: pkgId });
-            toast.success('充值成功！', { description: '积分已到账。' });
-            setTimeout(() => window.location.reload(), 1000);
+
+            // Call Stripe Checkout API instead of direct recharge
+            const response = await axios.post('/api/stripe/checkout', {
+                type: 'credit', // Specify type as credit recharge
+                packageId: pkgId
+            });
+
+            if (response.data.url) {
+                // Redirect to Stripe
+                window.location.href = response.data.url;
+            } else {
+                throw new Error('Invalid response from payment server');
+            }
         } catch (error: unknown) {
-            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error : '请稍后重试';
-            toast.error('充值失败', { description: errorMessage });
-        } finally {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error : getErrorMessage(error);
+            toast.error('充值发起失败', { description: errorMessage });
             setIsProcessing(false);
             setSelectedPkg(null);
         }
