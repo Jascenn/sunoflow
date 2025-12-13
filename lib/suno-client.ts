@@ -297,7 +297,7 @@ class SunoClient {
    */
 
   private parse302aiTaskStatus(taskId: string, data: any): SunoTaskStatus {
-    console.log('[302.ai] Parsing task status, data type:', typeof data);
+    // console.log('[302.ai] Parsing task status, data type:', typeof data);
 
     // 302.ai 的响应有嵌套的 data 字段
     const topLevelStatus = data.status;
@@ -448,8 +448,9 @@ class SunoClient {
         return mockData; // Fallback to mock data on error so the page isn't empty
       }
     } else {
-      // Kie implementation or others
-      return [];
+      // Kie implementation or others - Default to mock data for demo purposes
+      console.log(`[SunoClient] Public feed not implemented for provider ${this.provider}, returning mock data.`);
+      return mockData;
     }
   }
 }

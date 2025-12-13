@@ -13,7 +13,7 @@ export interface SunoGenerateParams {
 }
 
 // kie.ai API 响应格式
-export interface KieApiResponse<T = any> {
+export interface KieApiResponse<T = unknown> {
   code: number;
   msg: string;
   data: T;
