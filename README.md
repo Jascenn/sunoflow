@@ -1,4 +1,4 @@
-# 🚀 SunoFlow - AI Music Generation Workbench
+# 🚀# Sunoflow - AI Music Generator (Updated: 2025-12-14)ion Workbench
 
 A professional-grade AI music generation workbench powered by [Suno API (Kie.ai)](https://kie.ai). Built to solve the pain points of the official web version: no batch generation, chaotic asset management, and cumbersome local remixing.
 
@@ -38,17 +38,20 @@ A professional-grade AI music generation workbench powered by [Suno API (Kie.ai)
 ### Setup Steps
 
 1. **Clone and Install**
+
    ```bash
    cd sunoflow
    pnpm install
    ```
 
 2. **Environment Variables**
+
    ```bash
    cp .env.example .env
    ```
 
    Fill in your `.env` file:
+
    ```env
    # Database
    DATABASE_URL="postgresql://..."
@@ -69,12 +72,14 @@ A professional-grade AI music generation workbench powered by [Suno API (Kie.ai)
    ```
 
 3. **Database Setup**
+
    ```bash
    pnpm db:generate
    pnpm db:push
    ```
 
 4. **Run Development Server**
+
    ```bash
    pnpm dev
    ```
@@ -130,6 +135,7 @@ Then connect your GitHub repo to Cloudflare Pages or use Wrangler CLI.
 ### 💳 Payment System Testing
 
 **Mock Payment (Development Mode):**
+
 ```bash
 # No configuration needed! Just visit:
 http://localhost:3000/recharge
@@ -139,6 +145,7 @@ http://localhost:3000/recharge
 ```
 
 **Real Payment (Production Mode):**
+
 ```bash
 # 1. Configure Stripe keys in .env
 # 2. Toggle OFF mock payment mode
@@ -150,10 +157,12 @@ See [MOCK_PAYMENT_TEST_GUIDE.md](./MOCK_PAYMENT_TEST_GUIDE.md) for detailed test
 ## 📝 API Routes
 
 **Music Generation:**
+
 - `POST /api/generate` - Start a new music generation task
 - `GET /api/tasks` - Fetch all user tasks with status updates
 
 **Payment:**
+
 - `POST /api/payment/create-checkout` - Create Stripe checkout session (real payment)
 - `POST /api/payment/mock-checkout` - Create mock payment (testing)
 - `POST /api/payment/webhook` - Handle Stripe payment callbacks
