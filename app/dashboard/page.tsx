@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, User, Coins, RefreshCw, Home, Sparkles, Trophy, Play, Music, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { promptExamples } from '@/lib/prompt-examples';
+import { promptExamples, type PromptExample } from '@/lib/prompt-examples';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ExploreView } from '@/components/music/explore-view';
@@ -124,7 +124,7 @@ function DashboardContent() {
     return () => clearInterval(interval);
   }, [data?.tasks, refetch]);
 
-  const handleUseStyle = (ex: any) => {
+  const handleUseStyle = (ex: PromptExample & { coverColor?: string }) => {
     setTemplate({
       mode: 'description',
       prompt: ex.prompt,

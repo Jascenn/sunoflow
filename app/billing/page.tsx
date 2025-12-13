@@ -18,8 +18,16 @@ import { useLanguage } from '@/components/providers/language-provider';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
 
 // ----------------------------------------------------------------------
-// Constants
+// Constants & Types
 // ----------------------------------------------------------------------
+
+interface Transaction {
+    id: string;
+    type: string;
+    amount: number;
+    status: string;
+    createdAt: string;
+}
 
 const MEMBERSHIP_PLANS: {
     id: string;
@@ -242,8 +250,9 @@ function RechargeTab() {
             await axios.post('/api/recharge', { packageId: pkgId });
             toast.success('充值成功！', { description: '积分已到账。' });
             setTimeout(() => window.location.reload(), 1000);
-        } catch (error: any) {
-            toast.error('充值失败', { description: error.response?.data?.error || '请稍后重试' });
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error : '请稍后重试';
+            toast.error('充值失败', { description: errorMessage });
         } finally {
             setIsProcessing(false);
             setSelectedPkg(null);
@@ -307,7 +316,7 @@ function TransactionsTab() {
             <h2 className="text-xl font-bold text-stone-900 mb-6">交易记录</h2>
             {history.length > 0 ? (
                 <div className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 shadow-sm">
-                    {history.map((tx: any) => (
+                    {history.map((tx: Transaction) => (
                         <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-stone-50 transition-colors">
                             <div className="flex items-center gap-4">
                                 <div className={cn("w-10 h-10 rounded-full flex items-center justify-center bg-stone-100", tx.type === 'RECHARGE' ? "text-green-600 bg-green-50" : "text-stone-500")}>

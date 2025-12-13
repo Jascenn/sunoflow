@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getErrorMessage } from '@/lib/utils';
 
 
 
@@ -72,12 +73,12 @@ export async function POST(
       task: updatedTask,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error toggling favorite:', error);
     return NextResponse.json(
       {
         error: 'Failed to toggle favorite',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );

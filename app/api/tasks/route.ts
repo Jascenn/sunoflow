@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSunoClient } from '@/lib/suno-client';
+import { getErrorMessage } from '@/lib/utils';
 
 
 
@@ -41,12 +42,12 @@ export async function GET(request: NextRequest) {
       tasks,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in /api/tasks:', error);
     return NextResponse.json(
       {
         error: 'Failed to fetch tasks',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );

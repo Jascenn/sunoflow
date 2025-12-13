@@ -1,6 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils';
 
 
 
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const whereClause: any = {
+        const whereClause: Prisma.TransactionWhereInput = {
             userId: user.id,
         };
 
@@ -42,8 +44,8 @@ export async function GET(request: NextRequest) {
         });
 
         return NextResponse.json({ transactions });
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('[TRANSACTIONS] Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal Server Error', details: getErrorMessage(error) }, { status: 500 });
     }
 }

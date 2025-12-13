@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getErrorMessage } from '@/lib/utils';
 
 
 
@@ -62,12 +63,12 @@ export async function GET(
       task,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching task:', error);
     return NextResponse.json(
       {
         error: 'Failed to fetch task',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );

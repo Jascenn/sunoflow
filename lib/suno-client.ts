@@ -4,7 +4,12 @@ import { SunoGenerateParams, SunoTaskResponse, SunoTaskStatus, KieApiResponse, S
 /**
  * 302.ai API Response Types
  */
-interface Api302Response<T = any> {
+import { getErrorMessage } from './utils';
+
+/**
+ * 302.ai API Response Types
+ */
+interface Api302Response<T = unknown> {
   code: number;
   message: string;
   data: T;
@@ -12,16 +17,26 @@ interface Api302Response<T = any> {
 
 interface Api302MusicData {
   id?: string;
+  clip_id?: string; // Some endpoints return clip_id
+  task_id?: string;
   audio_url?: string;
+  audioUrl?: string; // Some endpoints use camelCase
   video_url?: string;
   image_url?: string;
+  imageUrl?: string;
+  image_large_url?: string;
   lyric?: string;
   title?: string;
   tags?: string;
   prompt?: string;
+  gpt_description_prompt?: string;
   status?: string;
-  duration?: number;
+  state?: string;
+  duration?: number | string;
   created_at?: string;
+  progress?: string;
+  msg?: string;
+  error?: string;
   metadata?: any;
 }
 
@@ -115,8 +130,8 @@ class SunoClient {
         // 生成一个临时ID
         return `302ai-${Date.now()}`;
       }
-    } catch (error: any) {
-      console.error('[302.ai] Error generating music:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('[302.ai] Error generating music:', getErrorMessage(error));
       throw error;
     }
   }
@@ -202,8 +217,8 @@ class SunoClient {
             return this.parse302aiTaskStatus(taskId, data);
           }
         }
-      } catch (error: any) {
-        console.log(`[302.ai] Endpoint ${endpoint} failed:`, error.message);
+      } catch (error: unknown) {
+        console.log(`[302.ai] Endpoint ${endpoint} failed:`, getErrorMessage(error));
         // 继续尝试下一个端点
       }
     }
@@ -280,6 +295,7 @@ class SunoClient {
    * 302.ai 返回的数据结构: { data: { data: [...], status: "PENDING", task_id: "..." } }
    * 注意：302.ai 通常返回 2 个音乐结果
    */
+
   private parse302aiTaskStatus(taskId: string, data: any): SunoTaskStatus {
     console.log('[302.ai] Parsing task status, data type:', typeof data);
 
@@ -288,7 +304,6 @@ class SunoClient {
     const nestedDataArray = data.data && Array.isArray(data.data) ? data.data : [];
 
     console.log(`[302.ai] Found ${nestedDataArray.length} music results in response`);
-
     // 使用第一个结果作为主要数据
     const firstMusic = nestedDataArray[0] || {};
 
@@ -309,7 +324,7 @@ class SunoClient {
     });
 
     // 将所有音乐结果放入 response.sunoData 数组
-    const sunoData = nestedDataArray.map((music: any) => ({
+    const sunoData = nestedDataArray.map((music: Record<string, any>) => ({
       id: music.clip_id || music.task_id,
       title: music.title || 'Untitled',
       streamAudioUrl: music.audio_url || music.audioUrl,
@@ -407,15 +422,15 @@ class SunoClient {
 
         for (const ep of endpoints) {
           try {
-            const response = await this.client.get<Api302Response<any>>(ep, { params: { page: params.page || 1 } });
+            const response = await this.client.get<Api302Response<Api302MusicData[]>>(ep, { params: { page: params.page || 1 } });
             if (response.data.code === 200 && Array.isArray(response.data.data)) {
-              return response.data.data.map((item: any) => ({
-                id: item.id || item.clip_id,
+              return response.data.data.map((item: Api302MusicData) => ({
+                id: item.id || item.clip_id || '',
                 title: item.title || 'Untitled',
                 audioUrl: item.audio_url || item.audioUrl,
                 streamAudioUrl: item.audio_url || item.audioUrl,
                 imageUrl: item.image_url || item.imageUrl || item.image_large_url,
-                duration: item.duration ? parseFloat(item.duration) : null,
+                duration: item.duration ? parseFloat(String(item.duration)) : null,
                 tags: item.tags || item.metadata?.tags,
                 prompt: item.prompt || item.gpt_description_prompt,
                 lyric: item.metadata?.prompt || item.lyric
@@ -430,7 +445,6 @@ class SunoClient {
 
       } catch (error) {
         console.warn('[302.ai] Failed to fetch feed, falling back to mock/empty', error);
-        // return mockData; // To test UI, you might want mockData
         return mockData; // Fallback to mock data on error so the page isn't empty
       }
     } else {

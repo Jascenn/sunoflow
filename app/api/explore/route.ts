@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 // 
 import { getSunoClient } from '@/lib/suno-client';
+import { getErrorMessage } from '@/lib/utils';
 
 
 export async function GET(request: Request) {
@@ -17,10 +18,10 @@ export async function GET(request: Request) {
             success: true,
             data
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('[API] Explore feed error:', error);
         return NextResponse.json(
-            { success: false, error: error.message || 'Failed to fetch feed' },
+            { success: false, error: getErrorMessage(error) },
             { status: 500 }
         );
     }

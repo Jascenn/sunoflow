@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getErrorMessage } from '@/lib/utils';
 
 
 
@@ -94,12 +95,12 @@ export async function GET(
         : null,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error preparing download:', error);
     return NextResponse.json(
       {
         error: 'Failed to prepare download',
-        details: error.message,
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );
